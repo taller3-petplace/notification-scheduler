@@ -7,8 +7,10 @@ import (
 	"notification-scheduler/internal/internal/headers"
 )
 
+// AppContext context used by this app. It contains data, mainly from the user, that came in the request that can be use anywhere
 type AppContext struct {
 	TelegramRequest bool
+	TelegramID      string
 	UserID          string
 	Email           string
 }
@@ -24,12 +26,12 @@ func NewAppContext(request *http.Request) (context.Context, error) {
 	token := request.Header.Get(headers.JWT)
 
 	if token == "" {
-		return nil, fmt.Errorf("missing jwt")
+		return nil, fmt.Errorf("error missing jwt")
 	}
 
+	// ToDo: unmarshall jwt. Licha
 	appContext := AppContext{
 		TelegramRequest: requestFromTelegram,
-		UserID:          "2", // ToDo: refactor this. Licha
 	}
 
 	return context.WithValue(
