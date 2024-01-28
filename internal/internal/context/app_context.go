@@ -8,9 +8,9 @@ import (
 )
 
 type AppContext struct {
-	telegramRequest bool
-	userID          string
-	userMail        string
+	TelegramRequest bool
+	UserID          string
+	Email           string
 }
 
 type appContextKey struct{}
@@ -28,8 +28,8 @@ func NewAppContext(request *http.Request) (context.Context, error) {
 	}
 
 	appContext := AppContext{
-		telegramRequest: requestFromTelegram,
-		userID:          "2", // ToDo: refactor this. Licha
+		TelegramRequest: requestFromTelegram,
+		UserID:          "2", // ToDo: refactor this. Licha
 	}
 
 	return context.WithValue(
