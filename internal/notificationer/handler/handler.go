@@ -120,7 +120,7 @@ func (nh *NotificationHandler) GetNotificationData(c *gin.Context) {
 
 	notification, err := nh.service.GetNotification(notificationID)
 	if err != nil {
-		// ToDo: handle 404
+		// ToDo: handle 404a
 		errResponse := NerErrorResponse(fmt.Errorf("%w: %v", errFetchingNotification, err))
 		c.JSON(errResponse.StatusCode, errResponse)
 		return
