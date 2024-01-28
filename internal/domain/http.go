@@ -1,39 +1,56 @@
 package domain
 
-import "time"
-
-// via service by which the notification is sent
-type via string
-
-const (
-	Telegram via = "telegram"
-	Mail     via = "mail"
+import (
+	"notification-scheduler/internal/utils"
+	"time"
 )
 
+// Via service by which the notification is sent
+type Via string
+
+const (
+	Telegram Via = "telegram"
+	Mail     Via = "mail"
+	Both     Via = "both"
+)
+
+var validVias = []Via{
+	Telegram,
+	Mail,
+	Both,
+}
+
+// ValidVia returns true if the given via is valid, otherwise false
+func ValidVia(via Via) bool {
+	return utils.Contains(validVias, via)
+}
+
 type NotificationRequest struct {
-	UserID    string     `json:"user_id" binding:"required"`
-	Message   string     `json:"message" binding:"required"`
-	StartDate time.Time  `json:"start_date" binding:"required"`
-	EndDate   *time.Time `json:"end_date"`
-	Frequency int        `json:"frequency" binding:"required"`
-	Times     int        `json:"times" binding:"required"`
-	Via       via
+	TelegramID  string     `json:"user_id"`
+	Via         Via        `json:"via"`
+	Message     string     `json:"message" binding:"required"`
+	StartDate   time.Time  `json:"start_date" binding:"required"`
+	EndDate     *time.Time `json:"end_date"`
+	Frequency   int        `json:"frequency" binding:"required"`
+	TimesPerDay int        `json:"times_per_day" binding:"required"`
+	Email       string
 }
 
 func (nr NotificationRequest) ToNotification() Notification {
 	return Notification{
-		UserID:    nr.UserID,
-		Message:   nr.Message,
-		Via:       nr.Via,
-		StartDate: nr.StartDate,
-		EndDate:   nr.EndDate,
-		Frequency: nr.Frequency,
+		TelegramID: nr.TelegramID,
+		Email:      nr.Email,
+		Message:    nr.Message,
+		Via:        nr.Via,
+		StartDate:  nr.StartDate,
+		EndDate:    nr.EndDate,
+		Frequency:  nr.Frequency,
 	}
 }
 
 type NotificationResponse struct {
 	ID        int        `json:"id"`
-	Via       via        `json:"via"`
+	Via       Via        `json:"via"`
 	StartDate time.Time  `json:"start_date"`
 	EndDate   *time.Time `json:"end_date,omitempty"`
 }

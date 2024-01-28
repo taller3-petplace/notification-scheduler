@@ -42,10 +42,12 @@ func (nh *NotificationHandler) ScheduleNotification(c *gin.Context) {
 		return
 	}
 
-	notificationRequest.Via = domain.Telegram
+	// If the request came from the frontend we have to set the IDs here
 	if !appContext.TelegramRequest {
-		notificationRequest.UserID = appContext.Email
-		notificationRequest.Via = domain.Mail
+		notificationRequest.TelegramID = appContext.TelegramID
+		notificationRequest.Email = appContext.Email
+	} else {
+		notificationRequest.Via = domain.Telegram
 	}
 
 	err = validator.ValidateNotificationRequest(notificationRequest)
@@ -126,7 +128,7 @@ func (nh *NotificationHandler) GetNotificationData(c *gin.Context) {
 		return
 	}
 
-	if notification.UserID != appContext.Email {
+	if notification.Email != appContext.Email {
 		errResponse := NerErrorResponse(fmt.Errorf("%w: userID %s", errUserNotAllowed, appContext.UserID))
 		c.JSON(errResponse.StatusCode, errResponse)
 		return
@@ -164,7 +166,7 @@ func (nh *NotificationHandler) DeleteNotification(c *gin.Context) {
 		return
 	}
 
-	if notification.UserID != appContext.Email {
+	if notification.Email != appContext.Email {
 		errResponse := NerErrorResponse(fmt.Errorf("%w: cannot delete notification, userID %s", errUserNotAllowed, appContext.UserID))
 		c.JSON(errResponse.StatusCode, errResponse)
 		return
