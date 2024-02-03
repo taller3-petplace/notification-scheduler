@@ -108,10 +108,16 @@ func extractDataFromJWT(tokenString string) (*jwtData, error) {
 
 	// Access the claims if the signature is valid
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		var telegramID string
+		telegramIDJWT, found := claims["telegram_id"]
+		if found {
+			telegramID = telegramIDJWT.(string)
+		}
+
 		return &jwtData{
 			userID:     claims["user_id"].(string),
 			email:      claims["email"].(string),
-			telegramID: claims["telegram_id"].(string),
+			telegramID: telegramID,
 		}, nil
 	}
 

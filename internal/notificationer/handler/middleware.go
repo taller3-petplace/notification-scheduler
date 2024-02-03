@@ -12,6 +12,7 @@ func AppContextCreator() gin.HandlerFunc {
 		appRequestContext, err := context.NewAppContext(c.Request)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err.Error())
+			c.Abort()
 			return
 		}
 
