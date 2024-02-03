@@ -16,9 +16,9 @@ type EmailConfig struct {
 }
 
 type Mail struct {
-	To      string `json:"to" example:"tomasfanciotti@gmail.com"`
-	Subject string `json:"subject" example:"testing subject"`
-	Body    string `json:"body" example:"body of the mail"`
+	To      string `json:"to" binding:"required" example:"tomasfanciotti@gmail.com"`
+	Subject string `json:"subject" binding:"required" example:"testing subject"`
+	Body    string `json:"body" binding:"required" example:"body of the mail"`
 }
 
 func NewEmailService(emailConfig EmailConfig) (EmailService, error) {
