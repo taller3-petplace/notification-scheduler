@@ -37,7 +37,10 @@ func main() {
 		fmt.Printf("error initializing logger: %v", err)
 	}
 
-	notificationer := app.NewApp()
+	notificationer, err := app.NewApp()
+	if err != nil {
+		panic(err)
+	}
 	defaultEngine := gin.Default()
 	defaultEngine.Use(CORSMiddleware())
 	notificationer.RegisterRoutes(defaultEngine)

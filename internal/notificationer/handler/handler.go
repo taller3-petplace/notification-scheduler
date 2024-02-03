@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"notification-scheduler/internal/domain"
+	"notification-scheduler/internal/email"
 	"notification-scheduler/internal/internal/context"
 	"notification-scheduler/internal/notificationer/handler/internal/validator"
 )
@@ -18,12 +19,14 @@ type servicer interface {
 }
 
 type NotificationHandler struct {
-	service servicer
+	service     servicer
+	emailClient email.AwsClient
 }
 
-func NewNotificationHandler(service servicer) *NotificationHandler {
+func NewNotificationHandler(service servicer, emailClient email.AwsClient) *NotificationHandler {
 	return &NotificationHandler{
-		service: service,
+		service:     service,
+		emailClient: emailClient,
 	}
 }
 
@@ -187,4 +190,33 @@ func (nh *NotificationHandler) DeleteNotification(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, nil)
+}
+
+// SendEmail godoc
+//
+//	@Summary		send mail
+//	@Description	Send mail to given user
+//	@Tags			Mail
+//	@Accept			json
+//	@Produce		json
+//	@Param			mail	body		Mail	true	"mail info"
+//	@Success		201		{object}	nil
+//	@Failure		400,404	{object}	nil
+//	@Router			/mail-service/send/ [post]
+func (nh *NotificationHandler) SendEmail(c *gin.Context) {
+
+	mail := email.Mail{}
+	err := c.BindJSON(&mail)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = nh.emailClient.SendEmail(mail)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(201, nil)
 }
