@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 )
 
 type servicer interface {
-	ScheduleNotification(notification domain.Notification) error
+	ScheduleNotifications(notification domain.Notification) error
 	GetNotificationsByUserEmail(email string) ([]domain.Notification, error)
 	GetNotification(notificationID string) (domain.Notification, error)
 	DeleteNotification(notificationID string) error
@@ -58,8 +59,13 @@ func (nh *NotificationHandler) ScheduleNotification(c *gin.Context) {
 	}
 
 	notification := notificationRequest.ToNotification()
-	err = nh.service.ScheduleNotification(notification)
-	// ToDo: handle idempotent messages
+	err = nh.service.ScheduleNotifications(notification)
+	var serviceErrorContext serviceError
+	if errors.As(err, &serviceErrorContext) && serviceErrorContext.AlreadyExists() {
+		c.JSON(http.StatusOK, domain.NewNotificationResponse(notification))
+		return
+	}
+
 	if err != nil {
 		errResponse := NerErrorResponse(fmt.Errorf("%w: %v", errSchedulingNotification, err))
 		c.JSON(errResponse.StatusCode, errResponse)
@@ -106,7 +112,7 @@ func (nh *NotificationHandler) GetNotifications(c *gin.Context) {
 }
 
 func (nh *NotificationHandler) GetNotificationData(c *gin.Context) {
-	appContext, err := context.GetAppContext(c)
+	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {
 		errResponse := NerErrorResponse(fmt.Errorf("%w: %v", errGettingAppContext, err))
 		c.JSON(errResponse.StatusCode, errResponse)
@@ -122,8 +128,7 @@ func (nh *NotificationHandler) GetNotificationData(c *gin.Context) {
 
 	notification, err := nh.service.GetNotification(notificationID)
 	if err != nil {
-		// ToDo: handle 404a
-		errResponse := NerErrorResponse(fmt.Errorf("%w: %v", errFetchingNotification, err))
+		errResponse := NerErrorResponse(fmt.Errorf("%w: %w", errFetchingNotification, err))
 		c.JSON(errResponse.StatusCode, errResponse)
 		return
 	}
@@ -160,7 +165,6 @@ func (nh *NotificationHandler) DeleteNotification(c *gin.Context) {
 	// Sanity check: only the user that creates the notification can delete it
 	notification, err := nh.service.GetNotification(notificationID)
 	if err != nil {
-		// ToDo: handle 404
 		errResponse := NerErrorResponse(fmt.Errorf("%w: %v", errFetchingNotification, err))
 		c.JSON(errResponse.StatusCode, errResponse)
 		return

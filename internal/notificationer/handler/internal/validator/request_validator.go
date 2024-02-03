@@ -3,13 +3,14 @@ package validator
 import (
 	"fmt"
 	"notification-scheduler/internal/domain"
+	"notification-scheduler/internal/utils"
 	"time"
 )
 
 // ValidateNotificationRequest validates the given notification request. The following checks are performed:
 // + Message must be at least of length 5
 // + StartDate and EndDate must be from now on, not from the past
-// + At least one of them, Frequency or TimesPerDay, must be greater than zero
+// + The hours must be on the hour or thirty. Their range go from 0 to 23
 // + Via must be a valid one. Actually only Telegram, Mail or Both are valid
 // + If via is 'telegram', the notification must contain the telegramID of the user
 // + If via is 'mail', the notification must contain the email of the user
@@ -29,16 +30,10 @@ func ValidateNotificationRequest(notification domain.NotificationRequest) error 
 		return fmt.Errorf("%w: date from the past", errInvalidEndDate)
 	}
 
-	if notification.Frequency < 0 {
-		return fmt.Errorf("%w: negative frequency %v. Must be greater or equal to zero", errInvalidFrequency, notification.Frequency)
-	}
-
-	if notification.TimesPerDay < 0 {
-		return fmt.Errorf("%w: negative times per day %v. Must be greater or equal to zero", errInvalidTimesPerDay, notification.TimesPerDay)
-	}
-
-	if notification.TimesPerDay == 0 && notification.Frequency == 0 {
-		return fmt.Errorf("%w: times per day and frequency are zero. At least one of them has to be greater than zero", errInvalidCombination)
+	for _, hour := range notification.Hours {
+		if !utils.ValidHour(hour) {
+			return fmt.Errorf("%w: hours must be o'clock or 30, and range from 0 to 23. Given: %s", errInvalidHour, hour)
+		}
 	}
 
 	if !domain.ValidVia(notification.Via) {

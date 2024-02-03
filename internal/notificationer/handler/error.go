@@ -10,6 +10,14 @@ type ErrorResponse struct {
 	Message    string `json:"message"`
 }
 
+// serviceError interface for errors that come from the service
+type serviceError interface {
+	error
+	NotFound() bool
+	AlreadyExists() bool
+	InternalError() bool
+}
+
 var (
 	errGettingAppContext             = errors.New("error getting app")
 	errInvalidNotificationBody       = errors.New("error invalid notification request body")
@@ -34,6 +42,22 @@ var statusCodeByErr = map[error]int{
 }
 
 func NerErrorResponse(err error) ErrorResponse {
+	var serviceErrorData serviceError
+	isServiceError := errors.As(err, &serviceErrorData)
+	if isServiceError && serviceErrorData.NotFound() {
+		return ErrorResponse{
+			StatusCode: http.StatusNotFound,
+			Message:    serviceErrorData.Error(),
+		}
+	}
+
+	if isServiceError && serviceErrorData.InternalError() {
+		return ErrorResponse{
+			StatusCode: http.StatusInternalServerError,
+			Message:    serviceErrorData.Error(),
+		}
+	}
+
 	errCode, ok := statusCodeByErr[err]
 	if ok {
 		return ErrorResponse{
