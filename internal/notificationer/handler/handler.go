@@ -28,7 +28,7 @@ func NewNotificationHandler(service servicer) *NotificationHandler {
 }
 
 func (nh *NotificationHandler) ScheduleNotification(c *gin.Context) {
-	appContext, err := context.GetAppContext(c)
+	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {
 		errResponse := NerErrorResponse(fmt.Errorf("%w: %v", errGettingAppContext, err))
 		c.JSON(errResponse.StatusCode, errResponse)
@@ -77,7 +77,7 @@ func (nh *NotificationHandler) ScheduleNotification(c *gin.Context) {
 }
 
 func (nh *NotificationHandler) GetNotifications(c *gin.Context) {
-	appContext, err := context.GetAppContext(c)
+	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {
 		errResponse := NerErrorResponse(fmt.Errorf("%w: %v", errGettingAppContext, err))
 		c.JSON(errResponse.StatusCode, errResponse)
@@ -148,7 +148,7 @@ func (nh *NotificationHandler) UpdateNotification(c *gin.Context) {
 }
 
 func (nh *NotificationHandler) DeleteNotification(c *gin.Context) {
-	appContext, err := context.GetAppContext(c)
+	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {
 		errResponse := NerErrorResponse(fmt.Errorf("%w: %v", errGettingAppContext, err))
 		c.JSON(errResponse.StatusCode, errResponse)
