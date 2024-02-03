@@ -11,7 +11,7 @@ import (
 )
 
 type servicer interface {
-	ScheduleNotifications(notification domain.Notification) error
+	ScheduleNotifications(notification domain.Notification) ([]domain.Notification, error)
 	GetNotificationsByUserEmail(email string) ([]domain.Notification, error)
 	GetNotification(notificationID string) (domain.Notification, error)
 	DeleteNotification(notificationID string) error
@@ -59,7 +59,7 @@ func (nh *NotificationHandler) ScheduleNotification(c *gin.Context) {
 	}
 
 	notification := notificationRequest.ToNotification()
-	err = nh.service.ScheduleNotifications(notification)
+	createdNotifications, err := nh.service.ScheduleNotifications(notification)
 	var serviceErrorContext serviceError
 	if errors.As(err, &serviceErrorContext) && serviceErrorContext.AlreadyExists() {
 		c.JSON(http.StatusOK, domain.NewNotificationResponse(notification))
@@ -72,8 +72,11 @@ func (nh *NotificationHandler) ScheduleNotification(c *gin.Context) {
 		return
 	}
 
-	notificationResponse := domain.NewNotificationResponse(notification)
-	c.JSON(http.StatusCreated, notificationResponse)
+	var response []domain.NotificationResponse
+	for idx := range createdNotifications {
+		response = append(response, domain.NewNotificationResponse(createdNotifications[idx]))
+	}
+	c.JSON(http.StatusCreated, response)
 }
 
 func (nh *NotificationHandler) GetNotifications(c *gin.Context) {

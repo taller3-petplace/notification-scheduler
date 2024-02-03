@@ -24,9 +24,9 @@ func NewNotificationService(db database) *NotificationService {
 
 // ScheduleNotifications creates the notifications. From one notification multiple can be created. This method
 // contains all the logic to create the corresponding amount of notifications.
-func (ns *NotificationService) ScheduleNotifications(notification domain.Notification) error {
+func (ns *NotificationService) ScheduleNotifications(notification domain.Notification) ([]domain.Notification, error) {
 
-	return nil
+	return nil, nil
 }
 
 // GetNotificationsByUserEmail searches notifications based on the given search function. This function works as a filter
