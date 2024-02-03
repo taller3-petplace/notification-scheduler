@@ -26,14 +26,13 @@ func ValidVia(via Via) bool {
 }
 
 type NotificationRequest struct {
-	TelegramID  string     `json:"user_id"`
-	Via         Via        `json:"via"`
-	Message     string     `json:"message" binding:"required"`
-	StartDate   time.Time  `json:"start_date" binding:"required"`
-	EndDate     *time.Time `json:"end_date"`
-	Frequency   int        `json:"frequency" binding:"required"`
-	TimesPerDay int        `json:"times_per_day" binding:"required"`
-	Email       string
+	TelegramID string     `json:"user_id"`
+	Via        Via        `json:"via"`
+	Message    string     `json:"message" binding:"required"`
+	StartDate  time.Time  `json:"start_date" binding:"required"`
+	EndDate    *time.Time `json:"end_date"`
+	Hours      []string   `json:"hours" binding:"required"`
+	Email      string
 }
 
 func (nr NotificationRequest) ToNotification() Notification {
@@ -44,15 +43,16 @@ func (nr NotificationRequest) ToNotification() Notification {
 		Via:        nr.Via,
 		StartDate:  nr.StartDate,
 		EndDate:    nr.EndDate,
-		Frequency:  nr.Frequency,
+		Hours:      nr.Hours,
 	}
 }
 
 type NotificationResponse struct {
-	ID        int        `json:"id"`
+	ID        string     `json:"id"`
 	Via       Via        `json:"via"`
 	StartDate time.Time  `json:"start_date"`
 	EndDate   *time.Time `json:"end_date,omitempty"`
+	Hours     []string   `json:"hours"`
 }
 
 func NewNotificationResponse(notification Notification) NotificationResponse {
