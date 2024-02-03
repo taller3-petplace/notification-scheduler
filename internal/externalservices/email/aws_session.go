@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/sirupsen/logrus"
 )
 
 type AwsClient struct {
@@ -29,7 +30,8 @@ func (c *AwsClient) Connect() error {
 		})
 
 	if err != nil {
-		return err
+		logrus.Errorf("Error creating session: %v", err)
+		return fmt.Errorf("%w: %w", errCreatingSession, err)
 	}
 
 	c.session = newSession
@@ -66,10 +68,10 @@ func (c *AwsClient) SendEmail(mail Mail) error {
 	output, err := c.client.SendEmail(input)
 
 	if err != nil {
-		fmt.Println("Error al enviar el correo electrónico:", err)
-		return err
+		logrus.Errorf("error sending email: %v", err)
+		return fmt.Errorf("%w: %w", errSendingEmail, err)
 	}
 
-	fmt.Printf("Correo electrónico enviado! Output: %v\n", output.MessageId)
+	logrus.Info("Email sent correctly! Output: %v", output.MessageId)
 	return nil
 }

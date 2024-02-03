@@ -3,7 +3,7 @@ package app
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"notification-scheduler/internal/email"
+	"notification-scheduler/internal/externalservices/email"
 	"notification-scheduler/internal/notificationer/db"
 	"notification-scheduler/internal/notificationer/handler"
 	"notification-scheduler/internal/notificationer/service"

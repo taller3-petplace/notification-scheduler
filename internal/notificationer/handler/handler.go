@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"notification-scheduler/internal/domain"
-	"notification-scheduler/internal/email"
+	"notification-scheduler/internal/externalservices/email"
 	"notification-scheduler/internal/internal/context"
 	"notification-scheduler/internal/notificationer/handler/internal/validator"
 )
@@ -204,19 +204,20 @@ func (nh *NotificationHandler) DeleteNotification(c *gin.Context) {
 //	@Failure		400,404	{object}	nil
 //	@Router			/mail-service/send/ [post]
 func (nh *NotificationHandler) SendEmail(c *gin.Context) {
-
-	mail := email.Mail{}
-	err := c.BindJSON(&mail)
+	var mail email.Mail
+	err := c.ShouldBindJSON(&mail)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		errResponse := NerErrorResponse(fmt.Errorf("%w: %w", errInvalidMail, err))
+		c.JSON(errResponse.StatusCode, errResponse)
 		return
 	}
 
 	err = nh.emailClient.SendEmail(mail)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		errResponse := NerErrorResponse(fmt.Errorf("%w: %w", errSendingEmail, err))
+		c.JSON(errResponse.StatusCode, errResponse)
 		return
 	}
 
-	c.JSON(201, nil)
+	c.JSON(http.StatusOK, nil)
 }

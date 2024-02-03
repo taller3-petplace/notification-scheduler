@@ -21,6 +21,8 @@ type serviceError interface {
 var (
 	errGettingAppContext             = errors.New("error getting app")
 	errInvalidNotificationBody       = errors.New("error invalid notification request body")
+	errInvalidMail                   = errors.New("error invalid mail structure")
+	errSendingEmail                  = errors.New("error sending email")
 	errNotificationRequestValidation = errors.New("error notification request validation")
 	errSchedulingNotification        = errors.New("error scheduling notification")
 	errUserNotAllowed                = errors.New("error user not allowed")
@@ -35,9 +37,11 @@ var statusCodeByErr = map[error]int{
 	errSchedulingNotification:        http.StatusInternalServerError,
 	errFetchingUserNotifications:     http.StatusInternalServerError,
 	errDeletingNotification:          http.StatusInternalServerError,
+	errSendingEmail:                  http.StatusInternalServerError,
 	errInvalidNotificationBody:       http.StatusBadRequest,
 	errNotificationRequestValidation: http.StatusBadRequest,
 	errMissingNotificationID:         http.StatusBadRequest,
+	errInvalidMail:                   http.StatusBadRequest,
 	errUserNotAllowed:                http.StatusUnauthorized,
 }
 

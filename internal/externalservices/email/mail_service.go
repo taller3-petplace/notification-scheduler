@@ -20,14 +20,3 @@ type Mail struct {
 	Subject string `json:"subject" binding:"required" example:"testing subject"`
 	Body    string `json:"body" binding:"required" example:"body of the mail"`
 }
-
-func NewEmailService(emailConfig EmailConfig) (EmailService, error) {
-
-	session := NewAwsSession(&emailConfig)
-	err := session.Connect()
-	if err != nil {
-		return EmailService{}, err
-	}
-
-	return EmailService{client: session}, nil
-}
