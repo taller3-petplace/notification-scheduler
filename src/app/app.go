@@ -1,8 +1,13 @@
 package app
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"notification-scheduler/internal/notificationer/db"
+	"notification-scheduler/internal/notificationer/handler"
+	"notification-scheduler/internal/notificationer/service"
+)
 
-type handler interface {
+type appHandler interface {
 	RegisterRoutes(r *gin.Engine)
 	ScheduleNotification(c *gin.Context)
 	GetNotifications(c *gin.Context)
@@ -12,20 +17,28 @@ type handler interface {
 }
 
 type App struct {
-	NotificationHandler handler
+	NotificationHandler appHandler
 }
 
 // NewApp initializes all dependencies that App requires
 func NewApp() *App {
 	// DB
+	appDB := db.NewFakeDB(nil)
 
 	// Service
+	notificationService := service.NewNotificationService(appDB)
 
 	// Logger
 
-	// Controller
+	// Handler
+	notificationHandler := handler.NewNotificationHandler(notificationService)
 
 	// App
+	return &App{
+		NotificationHandler: notificationHandler,
+	}
+}
 
-	return &App{}
+func (a *App) RegisterRoutes(r *gin.Engine) {
+	a.NotificationHandler.RegisterRoutes(r)
 }
