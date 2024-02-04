@@ -3,11 +3,15 @@ package app
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"notification-scheduler/internal/domain"
 	"notification-scheduler/internal/externalservices/email"
+	"notification-scheduler/internal/externalservices/telegram"
 	"notification-scheduler/internal/notificationer/db"
 	"notification-scheduler/internal/notificationer/handler"
 	"notification-scheduler/internal/notificationer/service"
 	"os"
+	"time"
 )
 
 type appHandler interface {
@@ -17,6 +21,10 @@ type appHandler interface {
 	GetNotificationData(c *gin.Context)
 	UpdateNotification(c *gin.Context)
 	DeleteNotification(c *gin.Context)
+}
+
+type telegramHandler interface {
+	SendNotifications(notifications []domain.Notification) error
 }
 
 func loadEmailConfig() (*email.EmailConfig, error) {
@@ -48,6 +56,7 @@ func loadEmailConfig() (*email.EmailConfig, error) {
 
 type App struct {
 	NotificationHandler appHandler
+	Telegramer          telegramHandler
 }
 
 // NewApp initializes all dependencies that App requires
@@ -69,12 +78,17 @@ func NewApp() (*App, error) {
 		return nil, err
 	}
 
+	// Telegramer
+	client := http.Client{Timeout: 5 * time.Second}
+	telegramer := telegram.NewTelegramer(client)
+
 	// Handler
 	notificationHandler := handler.NewNotificationHandler(notificationService, &session)
 
 	// App
 	return &App{
 		NotificationHandler: notificationHandler,
+		Telegramer:          telegramer,
 	}, nil
 }
 
