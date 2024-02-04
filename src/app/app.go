@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"notification-scheduler/internal/domain"
 	"notification-scheduler/internal/externalservices/email"
@@ -13,6 +14,8 @@ import (
 	"os"
 	"time"
 )
+
+const portEnv = "PORT"
 
 type appHandler interface {
 	RegisterRoutes(r *gin.Engine)
@@ -94,4 +97,16 @@ func NewApp() (*App, error) {
 
 func (a *App) RegisterRoutes(r *gin.Engine) {
 	a.NotificationHandler.RegisterRoutes(r)
+}
+
+func (a *App) RunForrestRun(r *gin.Engine) error {
+	port := os.Getenv(portEnv)
+	if port == "" {
+		logrus.Info("Using default port (8069)")
+	}
+
+	// ToDo: add thread for ticker
+
+	err := r.Run(port)
+	return err
 }

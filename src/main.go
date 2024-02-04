@@ -10,7 +10,6 @@ import (
 
 const (
 	logLevelEnv = "LOG_LEVEL"
-	portEnv     = "PORT"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -49,11 +48,7 @@ func main() {
 	defaultEngine.Use(CORSMiddleware())
 	notificationer.RegisterRoutes(defaultEngine)
 
-	port := os.Getenv(portEnv)
-	if port == "" {
-		logrus.Info("Using default port (8069)")
-	}
-	err = defaultEngine.Run(fmt.Sprintf(":%s", port))
+	err = notificationer.RunForrestRun(defaultEngine)
 	logrus.Error(err)
 }
 
