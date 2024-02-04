@@ -17,12 +17,12 @@ import "time"
 //
 // + Hours: hours of the day on which the notification should be sent
 type Notification struct {
-	ID         string     `json:"id"`
-	TelegramID string     `json:"telegram_id,omitempty"`
-	Email      string     `json:"email,omitempty"`
-	Message    string     `json:"message"`
-	Via        Via        `json:"via"`
-	StartDate  time.Time  `json:"start_date"`
-	EndDate    *time.Time `json:"end_date"`
-	Hours      []string   `json:"hours"`
+	ID         string
+	TelegramID string
+	Email      string
+	Message    string
+	Via        Via
+	StartDate  time.Time
+	EndDate    *time.Time
+	Hours      []string
 }
