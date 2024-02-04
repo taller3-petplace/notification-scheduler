@@ -70,7 +70,7 @@ func NewApp() (*App, error) {
 	}
 
 	// Handler
-	notificationHandler := handler.NewNotificationHandler(notificationService, session)
+	notificationHandler := handler.NewNotificationHandler(notificationService, &session)
 
 	// App
 	return &App{
