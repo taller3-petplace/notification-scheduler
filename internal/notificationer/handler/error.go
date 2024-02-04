@@ -62,11 +62,12 @@ func NerErrorResponse(err error) ErrorResponse {
 		}
 	}
 
-	errCode, ok := statusCodeByErr[err]
-	if ok {
-		return ErrorResponse{
-			StatusCode: errCode,
-			Message:    err.Error(),
+	for errKey, statusCode := range statusCodeByErr {
+		if errors.Is(err, errKey) {
+			return ErrorResponse{
+				StatusCode: statusCode,
+				Message:    err.Error(),
+			}
 		}
 	}
 

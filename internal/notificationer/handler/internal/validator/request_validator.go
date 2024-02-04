@@ -30,10 +30,15 @@ func ValidateNotificationRequest(notification domain.NotificationRequest) error 
 		return fmt.Errorf("%w: date from the past", errInvalidEndDate)
 	}
 
+	hoursSet := make(map[string]bool)
 	for _, hour := range notification.Hours {
 		if !utils.ValidHour(hour) {
 			return fmt.Errorf("%w: hours must be o'clock or 30, and range from 0 to 23. Given: %s", errInvalidHour, hour)
 		}
+		if hoursSet[hour] {
+			return fmt.Errorf("%w: %s", errRepeatedHour, hour)
+		}
+		hoursSet[hour] = true
 	}
 
 	if !domain.ValidVia(notification.Via) {

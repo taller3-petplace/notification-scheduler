@@ -20,19 +20,24 @@ func NewFakeDB(err error) *FakeDB {
 	}
 }
 
-func (fake *FakeDB) CreateNotifications(notifications []domain.Notification) error {
-	for _, notification := range notifications {
+func (fake *FakeDB) CreateNotifications(notifications []domain.Notification) ([]domain.Notification, error) {
+	var createdNotifications []domain.Notification
+	for idx := range notifications {
+		notification := notifications[idx]
 		notificationItem := item.CreateItemFromNotification(notification)
-		for _, hour := range notification.Hours {
-			if !utils.ValidHour(hour) {
-				return fmt.Errorf("error creating notifications: invalid key")
-			}
-
-			fake.db[hour] = append(fake.db[hour], notificationItem)
+		hour := notification.Hours[idx]
+		if !utils.ValidHour(hour) {
+			return nil, fmt.Errorf("error creating notifications: invalid key")
 		}
+
+		createdNotification := notificationItem.ToNotification()
+		createdNotification.Hours = []string{hour}
+		createdNotifications = append(createdNotifications, createdNotification)
+		fake.db[hour] = append(fake.db[hour], notificationItem)
+
 	}
 
-	return nil
+	return createdNotifications, nil
 }
 
 func (fake *FakeDB) GetNotification(notificationID string) (*domain.Notification, error) {

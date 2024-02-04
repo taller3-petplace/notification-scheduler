@@ -18,12 +18,16 @@ type servicer interface {
 	DeleteNotification(notificationID string) error
 }
 
-type NotificationHandler struct {
-	service     servicer
-	emailClient email.AwsClient
+type emailService interface {
+	SendEmail(email email.Mail) error
 }
 
-func NewNotificationHandler(service servicer, emailClient email.AwsClient) *NotificationHandler {
+type NotificationHandler struct {
+	service     servicer
+	emailClient emailService
+}
+
+func NewNotificationHandler(service servicer, emailClient emailService) *NotificationHandler {
 	return &NotificationHandler{
 		service:     service,
 		emailClient: emailClient,
@@ -56,7 +60,8 @@ func (nh *NotificationHandler) ScheduleNotification(c *gin.Context) {
 
 	err = validator.ValidateNotificationRequest(notificationRequest)
 	if err != nil {
-		errResponse := NerErrorResponse(fmt.Errorf("%w: %v", errNotificationRequestValidation, err))
+		a := fmt.Errorf("%w: %v", errNotificationRequestValidation, err)
+		errResponse := NerErrorResponse(a)
 		c.JSON(errResponse.StatusCode, errResponse)
 		return
 	}

@@ -1,7 +1,9 @@
 package domain
 
 import (
+	"encoding/json"
 	"notification-scheduler/internal/utils"
+	"strings"
 	"time"
 )
 
@@ -25,9 +27,25 @@ func ValidVia(via Via) bool {
 	return utils.Contains(validVias, via)
 }
 
+// getViaFromString returns the matching via based on the given input. If the input does not match
+// with any Via, is converted to one which might be invalid
+func getViaFromString(input string) Via {
+	input = strings.ToLower(input)
+	switch input {
+	case string(Telegram):
+		return Telegram
+	case string(Mail):
+		return Mail
+	case string(Both):
+		return Both
+	default:
+		return Via(input)
+	}
+}
+
 type NotificationRequest struct {
-	TelegramID string     `json:"user_id"`
-	Via        Via        `json:"via"`
+	TelegramID string     `json:"telegram_id"`
+	Via        Via        `json:"via" binding:"required"`
 	Message    string     `json:"message" binding:"required"`
 	StartDate  time.Time  `json:"start_date" binding:"required"`
 	EndDate    *time.Time `json:"end_date"`
@@ -35,7 +53,31 @@ type NotificationRequest struct {
 	Email      string
 }
 
-func (nr NotificationRequest) ToNotification() Notification {
+func (nr *NotificationRequest) UnmarshalJSON(rawData []byte) error {
+	var requestData struct {
+		TelegramID string     `json:"telegram_id"`
+		Via        string     `json:"via"`
+		Message    string     `json:"message"`
+		StartDate  time.Time  `json:"start_date"`
+		EndDate    *time.Time `json:"end_date"`
+		Hours      []string   `json:"hours"`
+	}
+
+	err := json.Unmarshal(rawData, &requestData)
+	if err != nil {
+		return err
+	}
+
+	nr.TelegramID = requestData.TelegramID
+	nr.Via = getViaFromString(requestData.Via)
+	nr.Message = requestData.Message
+	nr.StartDate = requestData.StartDate
+	nr.EndDate = requestData.EndDate
+	nr.Hours = requestData.Hours
+	return nil
+}
+
+func (nr *NotificationRequest) ToNotification() Notification {
 	return Notification{
 		TelegramID: nr.TelegramID,
 		Email:      nr.Email,
@@ -52,7 +94,7 @@ type NotificationResponse struct {
 	Via       Via        `json:"via"`
 	StartDate time.Time  `json:"start_date"`
 	EndDate   *time.Time `json:"end_date,omitempty"`
-	Hours     []string   `json:"hours"`
+	Hour      string     `json:"hour"`
 }
 
 func NewNotificationResponse(notification Notification) NotificationResponse {
@@ -61,5 +103,6 @@ func NewNotificationResponse(notification Notification) NotificationResponse {
 		Via:       notification.Via,
 		StartDate: notification.StartDate,
 		EndDate:   notification.EndDate,
+		Hour:      notification.Hours[0],
 	}
 }

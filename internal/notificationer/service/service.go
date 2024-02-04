@@ -7,7 +7,7 @@ import (
 type searchFunction func(notification domain.Notification) bool
 
 type database interface {
-	CreateNotifications(notifications []domain.Notification) error
+	CreateNotifications(notifications []domain.Notification) ([]domain.Notification, error)
 	GetNotification(notificationID string) (*domain.Notification, error)
 	DeleteNotification(notificationID string) (bool, error)
 }
@@ -25,8 +25,17 @@ func NewNotificationService(db database) *NotificationService {
 // ScheduleNotifications creates the notifications. From one notification multiple can be created. This method
 // contains all the logic to create the corresponding amount of notifications.
 func (ns *NotificationService) ScheduleNotifications(notification domain.Notification) ([]domain.Notification, error) {
+	var notifications []domain.Notification
+	for range notification.Hours {
+		notifications = append(notifications, notification)
+	}
 
-	return nil, nil
+	createdNotifications, err := ns.db.CreateNotifications(notifications)
+	if err != nil {
+		return nil, newInternalError("ScheduleNotifications", err, "")
+	}
+
+	return createdNotifications, nil
 }
 
 // GetNotificationsByUserEmail searches notifications based on the given search function. This function works as a filter
