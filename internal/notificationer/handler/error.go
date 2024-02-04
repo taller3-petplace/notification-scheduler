@@ -21,13 +21,16 @@ type serviceError interface {
 var (
 	errGettingAppContext             = errors.New("error getting app")
 	errInvalidNotificationBody       = errors.New("error invalid notification request body")
+	errInvalidUpdateRequest          = errors.New("error invalid update request body")
 	errInvalidMail                   = errors.New("error invalid mail structure")
 	errSendingEmail                  = errors.New("error sending email")
 	errNotificationRequestValidation = errors.New("error notification request validation")
+	errUpdateRequestValidation       = errors.New("error update notification request validation")
 	errSchedulingNotification        = errors.New("error scheduling notification")
 	errUserNotAllowed                = errors.New("error user not allowed")
 	errFetchingUserNotifications     = errors.New("error fetching notifications")
 	errFetchingNotification          = errors.New("error fetching notification")
+	errUpdatingNotification          = errors.New("error updating")
 	errMissingNotificationID         = errors.New("error missing notificationID")
 	errDeletingNotification          = errors.New("error deleting notification")
 )
@@ -42,10 +45,11 @@ var statusCodeByErr = map[error]int{
 	errNotificationRequestValidation: http.StatusBadRequest,
 	errMissingNotificationID:         http.StatusBadRequest,
 	errInvalidMail:                   http.StatusBadRequest,
+	errUpdateRequestValidation:       http.StatusBadRequest,
 	errUserNotAllowed:                http.StatusUnauthorized,
 }
 
-func NerErrorResponse(err error) ErrorResponse {
+func NewErrorResponse(err error) ErrorResponse {
 	var serviceErrorData serviceError
 	isServiceError := errors.As(err, &serviceErrorData)
 	if isServiceError && serviceErrorData.NotFound() {

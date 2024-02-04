@@ -64,3 +64,23 @@ func ValidateNotificationRequest(notification domain.NotificationRequest) error 
 
 	return nil
 }
+
+// ValidateUpdateRequest validates the given update notification request. The following checks are performed:
+// + Message must be at least of length 5
+// + EndDate must be from now on, not from the past
+// + At least one attribute must be updated
+func ValidateUpdateRequest(notification domain.UpdateNotificationRequest) error {
+	if notification.Message == "" && notification.EndDate == nil {
+		return errNothingToUpdate
+	}
+
+	if len(notification.Message) < 5 {
+		return fmt.Errorf("%w: must be of length at least 5", errInvalidMessage)
+	}
+
+	if notification.EndDate != nil && notification.EndDate.Before(time.Now()) {
+		return fmt.Errorf("%w: date from the past", errInvalidEndDate)
+	}
+
+	return nil
+}

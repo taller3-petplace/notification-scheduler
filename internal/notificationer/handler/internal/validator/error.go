@@ -12,4 +12,5 @@ var (
 	errMissingTelegramID      = errors.New("error missing telegramID")
 	errMissingEmail           = errors.New("error missing telegramID")
 	errMissingUserInformation = errors.New("error missing user information")
+	errNothingToUpdate        = errors.New("error nothing to update")
 )

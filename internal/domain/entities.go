@@ -26,3 +26,30 @@ type Notification struct {
 	EndDate    *time.Time
 	Hours      []string
 }
+
+func Merge(notification Notification, update UpdateNotificationRequest) Notification {
+	mergeResult := Notification{
+		ID:         notification.ID,
+		TelegramID: notification.TelegramID,
+		Email:      notification.Email,
+		Message:    notification.Message,
+		Via:        notification.Via,
+		StartDate:  notification.StartDate,
+		EndDate:    notification.EndDate,
+		Hours:      notification.Hours,
+	}
+
+	if notification.Message != update.Message {
+		mergeResult.Message = update.Message
+	}
+
+	if notification.EndDate != nil && update.EndDate == nil {
+		mergeResult.EndDate = nil
+	} else if notification.EndDate != nil && update.EndDate != nil && !notification.EndDate.Equal(*update.EndDate) {
+		mergeResult.EndDate = update.EndDate
+	} else if notification.EndDate == nil && update.EndDate != nil {
+		mergeResult.EndDate = update.EndDate
+	}
+
+	return mergeResult
+}

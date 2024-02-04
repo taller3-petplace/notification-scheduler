@@ -89,6 +89,11 @@ func (nr *NotificationRequest) ToNotification() Notification {
 	}
 }
 
+type UpdateNotificationRequest struct {
+	Message string     `json:"message"`
+	EndDate *time.Time `json:"end_date"`
+}
+
 type NotificationResponse struct {
 	ID        string     `json:"id"`
 	Via       Via        `json:"via"`
