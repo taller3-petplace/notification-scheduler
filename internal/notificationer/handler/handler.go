@@ -174,7 +174,7 @@ func (nh *NotificationHandler) UpdateNotification(c *gin.Context) {
 	}
 
 	var updateRequest domain.UpdateNotificationRequest
-	err = c.ShouldBindJSON(updateRequest)
+	err = c.ShouldBindJSON(&updateRequest)
 	if err != nil {
 		errResponse := NewErrorResponse(fmt.Errorf("%w: %v", errInvalidUpdateRequest, err))
 		c.JSON(errResponse.StatusCode, errResponse)

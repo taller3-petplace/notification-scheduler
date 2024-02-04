@@ -58,6 +58,26 @@ func (fake *FakeDB) GetNotification(notificationID string) (*domain.Notification
 	return nil, nil
 }
 
+func (fake *FakeDB) UpdateNotification(updatedNotification domain.Notification) error {
+	if fake.err != nil {
+		return fake.err
+	}
+
+	allNotifications, found := fake.db[updatedNotification.Hours[0]]
+	if !found {
+		return fmt.Errorf("key not found")
+	}
+
+	for idx := range allNotifications {
+		if allNotifications[idx].ID == updatedNotification.ID {
+			allNotifications[idx] = item.CreateItemFromNotification(updatedNotification)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("error notification not found")
+}
+
 func (fake *FakeDB) DeleteNotification(notificationID string) (bool, error) {
 	if fake.err != nil {
 		return false, fake.err

@@ -7,8 +7,9 @@ import (
 type searchFunction func(notification domain.Notification) bool
 
 type database interface {
-	CreateNotifications(notifications []domain.Notification) ([]domain.Notification, error)
+	CreateNotifications(notification domain.Notification) ([]domain.Notification, error)
 	GetNotification(notificationID string) (*domain.Notification, error)
+	UpdateNotification(notification domain.Notification) error
 	DeleteNotification(notificationID string) (bool, error)
 }
 
@@ -25,12 +26,7 @@ func NewNotificationService(db database) *NotificationService {
 // ScheduleNotifications creates the notifications. From one notification multiple can be created. This method
 // contains all the logic to create the corresponding amount of notifications.
 func (ns *NotificationService) ScheduleNotifications(notification domain.Notification) ([]domain.Notification, error) {
-	var notifications []domain.Notification
-	for range notification.Hours {
-		notifications = append(notifications, notification)
-	}
-
-	createdNotifications, err := ns.db.CreateNotifications(notifications)
+	createdNotifications, err := ns.db.CreateNotifications(notification)
 	if err != nil {
 		return nil, newInternalError("ScheduleNotifications", err, "")
 	}
@@ -58,6 +54,17 @@ func (ns *NotificationService) GetNotification(notificationID string) (domain.No
 	}
 
 	return *notification, err
+}
+
+// UpdateNotification updated the content of the given notification
+func (ns *NotificationService) UpdateNotification(updatedNotification domain.Notification) error {
+	operation := "UpdateNotification"
+	err := ns.db.UpdateNotification(updatedNotification)
+	if err != nil {
+		return newInternalError(operation, err, "notificationID: "+updatedNotification.ID)
+	}
+
+	return nil
 }
 
 // DeleteNotification deletes a single notification. If it does not exist, an error is returned

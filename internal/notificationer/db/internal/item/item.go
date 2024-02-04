@@ -20,8 +20,13 @@ type NotificationItem struct {
 
 // CreateItemFromNotification creates a NotificationItem from a domain.Notification. It receives the transactionTi
 func CreateItemFromNotification(notification domain.Notification) NotificationItem {
+	notificationID := notification.ID
+	if notificationID == "" {
+		notificationID = uuid.NewString()
+	}
+
 	return NotificationItem{
-		ID:         uuid.NewString(),
+		ID:         notificationID,
 		TelegramID: notification.TelegramID,
 		Email:      notification.Email,
 		Message:    notification.Message,
