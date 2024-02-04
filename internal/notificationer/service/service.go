@@ -8,6 +8,7 @@ type searchFunction func(notification domain.Notification) bool
 
 type database interface {
 	CreateNotifications(notification domain.Notification) ([]domain.Notification, error)
+	GetNotificationsByEmail(email string) ([]domain.Notification, error)
 	GetNotification(notificationID string) (*domain.Notification, error)
 	UpdateNotification(notification domain.Notification) error
 	DeleteNotification(notificationID string) (bool, error)
@@ -34,11 +35,15 @@ func (ns *NotificationService) ScheduleNotifications(notification domain.Notific
 	return createdNotifications, nil
 }
 
-// GetNotificationsByUserEmail searches notifications based on the given search function. This function works as a filter
-// in order to retrieve certain notifications
+// GetNotificationsByUserEmail searches all the notifications that have the given email
 func (ns *NotificationService) GetNotificationsByUserEmail(email string) ([]domain.Notification, error) {
-	//TODO implement me
-	panic("implement me")
+	operation := "GetNotificationsByUserEmail"
+	notifications, err := ns.db.GetNotificationsByEmail(email)
+	if err != nil {
+		return nil, newInternalError(operation, err, "email: "+email)
+	}
+
+	return notifications, nil
 }
 
 // GetNotification returns a single notification. If it does not exist, an error is returned

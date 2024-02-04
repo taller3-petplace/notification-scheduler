@@ -40,6 +40,25 @@ func (fake *FakeDB) CreateNotifications(notification domain.Notification) ([]dom
 	return createdNotifications, nil
 }
 
+func (fake *FakeDB) GetNotificationsByEmail(email string) ([]domain.Notification, error) {
+	if fake.err != nil {
+		return nil, fake.err
+	}
+
+	var userNotifications []domain.Notification
+	for hour, notificationsPerHour := range fake.db {
+		for _, notifItem := range notificationsPerHour {
+			if notifItem.Email == email {
+				notification := notifItem.ToNotification()
+				notification.Hours = []string{hour}
+				userNotifications = append(userNotifications, notification)
+			}
+		}
+	}
+
+	return userNotifications, nil
+}
+
 func (fake *FakeDB) GetNotification(notificationID string) (*domain.Notification, error) {
 	if fake.err != nil {
 		return nil, fake.err

@@ -85,22 +85,18 @@ func (nh *NotificationHandler) ScheduleNotification(c *gin.Context) {
 
 	var response []domain.NotificationResponse
 	for idx := range createdNotifications {
-		response = append(response, domain.NewNotificationResponse(createdNotifications[idx]))
+		notificationResponse := domain.NewNotificationResponse(createdNotifications[idx])
+		notificationResponse.HideMessage()
+		response = append(response, notificationResponse)
 	}
 	c.JSON(http.StatusCreated, response)
 }
 
+// GetNotifications returns all the notifications of the given user
 func (nh *NotificationHandler) GetNotifications(c *gin.Context) {
 	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {
 		errResponse := NewErrorResponse(fmt.Errorf("%w: %v", errGettingAppContext, err))
-		c.JSON(errResponse.StatusCode, errResponse)
-		return
-	}
-
-	userIDParam := c.Param("userID")
-	if userIDParam == "" || userIDParam != appContext.UserID {
-		errResponse := NewErrorResponse(fmt.Errorf("%w: userID %s", errUserNotAllowed, appContext.UserID))
 		c.JSON(errResponse.StatusCode, errResponse)
 		return
 	}
@@ -220,6 +216,8 @@ func (nh *NotificationHandler) UpdateNotification(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
+// DeleteNotification if exists, deletes the notification with the given notificationID.
+// This action is triggered by the users, if a notification reaches the end date nothing happens
 func (nh *NotificationHandler) DeleteNotification(c *gin.Context) {
 	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {

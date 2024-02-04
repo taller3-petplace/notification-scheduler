@@ -97,6 +97,7 @@ type UpdateNotificationRequest struct {
 type NotificationResponse struct {
 	ID        string     `json:"id"`
 	Via       Via        `json:"via"`
+	Message   string     `json:"message,omitempty"`
 	StartDate time.Time  `json:"start_date"`
 	EndDate   *time.Time `json:"end_date,omitempty"`
 	Hour      string     `json:"hour"`
@@ -106,8 +107,13 @@ func NewNotificationResponse(notification Notification) NotificationResponse {
 	return NotificationResponse{
 		ID:        notification.ID,
 		Via:       notification.Via,
+		Message:   notification.Message,
 		StartDate: notification.StartDate,
 		EndDate:   notification.EndDate,
 		Hour:      notification.Hours[0],
 	}
+}
+
+func (nr *NotificationResponse) HideMessage() {
+	nr.Message = ""
 }
