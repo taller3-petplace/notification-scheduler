@@ -23,7 +23,7 @@ func NewTelegramer(client http.Client) *Telegramer {
 }
 
 // SendNotifications sends all the notifications to Telegram Service
-// ToDo: send batches of notifications
+// ToDo: send chunks of notifications
 func (t *Telegramer) SendNotifications(notifications []domain.Notification) error {
 	var telegramNotifications []notification.TelegramNotification
 	for idx := range notifications {

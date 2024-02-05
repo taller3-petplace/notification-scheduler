@@ -35,8 +35,19 @@ func NewNotificationHandler(service servicer, emailClient emailService) *Notific
 	}
 }
 
-// ScheduleNotification receives a domain.NotificationRequest, performs validations and if it's all OK then one notification per each
-// specified hour is saved.
+// ScheduleNotification godoc
+//
+//	@Summary		Schedules notifications
+//	@Description	Receives a domain.NotificationRequest, performs validations and if it's all OK then one notification per each specified hour is saved.
+//	@Tags			Notification
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization		header		string						true	"jwt"
+//	@Param			X-Telegram-App		header		string						false	"true if the request comes from telegram service, otherwise false"
+//	@Param			NotificationRequest	body		domain.NotificationRequest	true	"info about the notification to create"
+//	@Success		201					{object}	[]domain.NotificationResponse
+//	@Failure		400,404				{object}	nil
+//	@Router			/notifications/notification [post]
 func (nh *NotificationHandler) ScheduleNotification(c *gin.Context) {
 	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {
@@ -92,7 +103,18 @@ func (nh *NotificationHandler) ScheduleNotification(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 }
 
-// GetNotifications returns all the notifications of the given user
+// GetNotifications godoc
+//
+//	@Summary		Search all notifications by user email
+//	@Description	Returns all the notifications of the given user
+//
+//	@Tags			Notification
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string	true	"jwt data, must contain the email of the user"
+//	@Success		200				{object}	[]domain.NotificationResponse
+//	@Failure		400,401,404		{object}	ErrorResponse
+//	@Router			/notifications/notification [get]
 func (nh *NotificationHandler) GetNotifications(c *gin.Context) {
 	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {
@@ -121,7 +143,19 @@ func (nh *NotificationHandler) GetNotifications(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// GetNotificationData fetches notifications by user email
+// GetNotificationData godoc
+//
+//	@Summary		Fetches notification by ID
+//	@Description	Fetches notification by ID
+//
+//	@Tags			Notification
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string	true	"jwt data"
+//	@Param			notificationID	path		string	true	"id of the notification"
+//	@Success		200				{object}	domain.NotificationResponse
+//	@Failure		400,401,404		{object}	ErrorResponse
+//	@Router			/notifications/notification/{notificationID} [get]
 func (nh *NotificationHandler) GetNotificationData(c *gin.Context) {
 	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {
@@ -154,7 +188,20 @@ func (nh *NotificationHandler) GetNotificationData(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// UpdateNotification updates attributes of certain notification. The attributes that can be updated are: message and end date
+// UpdateNotification godoc
+//
+//	@Summary		Updates a notification
+//	@Description	Updates attributes of certain notification. The attributes that can be updated are: message and end date
+//
+//	@Tags			Notification
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string								true	"jwt data"
+//	@Param			notificationID	path		string								true	"id of the notification"
+//	@Param			UpdateRequest	body		domain.UpdateNotificationRequest	true	"Fields to update"
+//	@Success		200				{object}	nil
+//	@Failure		400,401,404		{object}	ErrorResponse
+//	@Router			/notifications/notification/{notificationID} [patch]
 func (nh *NotificationHandler) UpdateNotification(c *gin.Context) {
 	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {
@@ -216,8 +263,19 @@ func (nh *NotificationHandler) UpdateNotification(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-// DeleteNotification if exists, deletes the notification with the given notificationID.
-// This action is triggered by the users, if a notification reaches the end date nothing happens
+// DeleteNotification godoc
+//
+//	@Summary		Deletes a notification
+//	@Description	If exists, deletes the notification with the given notificationID. This action is triggered by the users, if a notification reaches the end date nothing happens
+//
+//	@Tags			Notification
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string	true	"jwt data"
+//	@Param			notificationID	path		string	true	"id of the notification"
+//	@Success		200				{object}	nil
+//	@Failure		400,401,404		{object}	ErrorResponse
+//	@Router			/notifications/notification/{notificationID} [delete]
 func (nh *NotificationHandler) DeleteNotification(c *gin.Context) {
 	appContext, err := context.GetAppContext(c.Request.Context())
 	if err != nil {
@@ -259,15 +317,16 @@ func (nh *NotificationHandler) DeleteNotification(c *gin.Context) {
 
 // SendEmail godoc
 //
-//	@Summary		send mail
+//	@Summary		Send mail
 //	@Description	Send mail to given user
 //	@Tags			Mail
 //	@Accept			json
 //	@Produce		json
-//	@Param			mail	body		Mail	true	"mail info"
-//	@Success		201		{object}	nil
-//	@Failure		400,404	{object}	nil
-//	@Router			/mail-service/send/ [post]
+//	@Param			Authorization	header		string		true	"jwt data"
+//	@Param			mail			body		email.Mail	true	"mail info"
+//	@Success		201				{object}	nil
+//	@Failure		400,404			{object}	ErrorResponse
+//	@Router			/notifications/email [post]
 func (nh *NotificationHandler) SendEmail(c *gin.Context) {
 	var mail email.Mail
 	err := c.ShouldBindJSON(&mail)

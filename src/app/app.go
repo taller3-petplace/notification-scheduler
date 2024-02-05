@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -107,6 +108,6 @@ func (a *App) RunForrestRun(r *gin.Engine) error {
 
 	// ToDo: add thread for ticker
 
-	err := r.Run(port)
+	err := r.Run(fmt.Sprintf(":%s", port))
 	return err
 }

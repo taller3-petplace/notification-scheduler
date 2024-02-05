@@ -1,0 +1,306 @@
+definitions:
+  domain.NotificationRequest:
+    properties:
+      email:
+        type: string
+      end_date:
+        type: string
+      hours:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+      start_date:
+        type: string
+      telegram_id:
+        type: string
+      via:
+        $ref: '#/definitions/domain.Via'
+    required:
+    - hours
+    - message
+    - start_date
+    - via
+    type: object
+  domain.NotificationResponse:
+    properties:
+      end_date:
+        type: string
+      hour:
+        type: string
+      id:
+        type: string
+      message:
+        type: string
+      start_date:
+        type: string
+      via:
+        $ref: '#/definitions/domain.Via'
+    type: object
+  domain.UpdateNotificationRequest:
+    properties:
+      end_date:
+        type: string
+      message:
+        type: string
+    type: object
+  domain.Via:
+    enum:
+    - telegram
+    - mail
+    - both
+    type: string
+    x-enum-varnames:
+    - Telegram
+    - Mail
+    - Both
+  email.Mail:
+    properties:
+      body:
+        example: body of the mail
+        type: string
+      subject:
+        example: testing subject
+        type: string
+      to:
+        example: tomasfanciotti@gmail.com
+        type: string
+    required:
+    - body
+    - subject
+    - to
+    type: object
+  handler.ErrorResponse:
+    properties:
+      message:
+        type: string
+      status_code:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /notifications/email:
+    post:
+      consumes:
+      - application/json
+      description: Send mail to given user
+      parameters:
+      - description: jwt data
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: mail info
+        in: body
+        name: mail
+        required: true
+        schema:
+          $ref: '#/definitions/email.Mail'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Send mail
+      tags:
+      - Mail
+  /notifications/notification:
+    get:
+      consumes:
+      - application/json
+      description: Returns all the notifications of the given user
+      parameters:
+      - description: jwt data, must contain the email of the user
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.NotificationResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Search all notifications by user email
+      tags:
+      - Notification
+    post:
+      consumes:
+      - application/json
+      description: Receives a domain.NotificationRequest, performs validations and
+        if it's all OK then one notification per each specified hour is saved.
+      parameters:
+      - description: jwt
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: true if the request comes from telegram service, otherwise false
+        in: header
+        name: X-Telegram-App
+        type: string
+      - description: info about the notification to create
+        in: body
+        name: NotificationRequest
+        required: true
+        schema:
+          $ref: '#/definitions/domain.NotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/domain.NotificationResponse'
+            type: array
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Schedules notifications
+      tags:
+      - Notification
+  /notifications/notification/{notificationID}:
+    delete:
+      consumes:
+      - application/json
+      description: If exists, deletes the notification with the given notificationID.
+        This action is triggered by the users, if a notification reaches the end date
+        nothing happens
+      parameters:
+      - description: jwt data
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: id of the notification
+        in: path
+        name: notificationID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Deletes a notification
+      tags:
+      - Notification
+    get:
+      consumes:
+      - application/json
+      description: Fetches notification by ID
+      parameters:
+      - description: jwt data
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: id of the notification
+        in: path
+        name: notificationID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.NotificationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Fetches notification by ID
+      tags:
+      - Notification
+    patch:
+      consumes:
+      - application/json
+      description: 'Updates attributes of certain notification. The attributes that
+        can be updated are: message and end date'
+      parameters:
+      - description: jwt data
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: id of the notification
+        in: path
+        name: notificationID
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: UpdateRequest
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Updates a notification
+      tags:
+      - Notification
+swagger: "2.0"
