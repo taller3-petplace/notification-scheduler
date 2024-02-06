@@ -17,6 +17,7 @@ func (nh *NotificationHandler) RegisterRoutes(r *gin.Engine) {
 		return
 	})
 	group.POST("/notification", nh.ScheduleNotification)
+	group.POST("/trigger", nh.TriggerNotifications)
 	group.GET("/notification", nh.GetNotifications)
 	group.GET("/notification/:notificationID", nh.GetNotificationData)
 	group.PATCH("/notification/:notificationID", nh.UpdateNotification)

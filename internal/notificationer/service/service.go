@@ -12,6 +12,7 @@ type database interface {
 	GetNotification(notificationID string) (*domain.Notification, error)
 	UpdateNotification(notification domain.Notification) error
 	DeleteNotification(notificationID string) (bool, error)
+	GetAll(currentHour string) []domain.Notification
 }
 
 type NotificationService struct {
@@ -85,4 +86,8 @@ func (ns *NotificationService) DeleteNotification(notificationID string) error {
 	}
 
 	return nil
+}
+
+func (ns *NotificationService) GetAll(currentHour string) ([]domain.Notification, error) {
+	return ns.db.GetAll(currentHour), nil
 }

@@ -303,4 +303,34 @@ paths:
       summary: Updates a notification
       tags:
       - Notification
+  /notifications/trigger:
+    post:
+      consumes:
+      - application/json
+      description: Sends notifications to all users that have scheduled one for the
+        hour of this request
+      parameters:
+      - description: jwt data
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: sends notifications
+      tags:
+      - Notification
 swagger: "2.0"

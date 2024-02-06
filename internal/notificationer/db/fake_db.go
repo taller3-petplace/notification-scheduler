@@ -118,3 +118,19 @@ func (fake *FakeDB) DeleteNotification(notificationID string) (bool, error) {
 
 	return deleted, nil
 }
+
+func (fake *FakeDB) GetAll(key string) []domain.Notification {
+	var notifications []domain.Notification
+	notifItems, found := fake.db[key+":00"]
+	if !found {
+		return notifications
+	}
+
+	for idx := range notifItems {
+		notification := notifItems[idx].ToNotification()
+		notification.Hours = []string{key}
+		notifications = append(notifications, notification)
+	}
+
+	return notifications
+}

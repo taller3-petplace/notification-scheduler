@@ -87,7 +87,7 @@ func NewApp() (*App, error) {
 	telegramer := telegram.NewTelegramer(client)
 
 	// Handler
-	notificationHandler := handler.NewNotificationHandler(notificationService, &session)
+	notificationHandler := handler.NewNotificationHandler(notificationService, &session, telegramer)
 
 	// App
 	return &App{

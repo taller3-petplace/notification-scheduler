@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"notification-scheduler/internal/domain"
 	"notification-scheduler/internal/externalservices/email"
 	"notification-scheduler/internal/internal/context"
 	"notification-scheduler/internal/notificationer/handler/internal/validator"
+	"time"
 )
 
 type servicer interface {
@@ -17,21 +19,28 @@ type servicer interface {
 	GetNotification(notificationID string) (domain.Notification, error)
 	UpdateNotification(notification domain.Notification) error
 	DeleteNotification(notificationID string) error
+	GetAll(hour string) ([]domain.Notification, error)
 }
 
 type emailService interface {
 	SendEmail(email email.Mail) error
 }
 
+type telegramService interface {
+	SendNotifications(notifications []domain.Notification) error
+}
+
 type NotificationHandler struct {
 	service     servicer
 	emailClient emailService
+	telegramer  telegramService
 }
 
-func NewNotificationHandler(service servicer, emailClient emailService) *NotificationHandler {
+func NewNotificationHandler(service servicer, emailClient emailService, telegramer telegramService) *NotificationHandler {
 	return &NotificationHandler{
 		service:     service,
 		emailClient: emailClient,
+		telegramer:  telegramer,
 	}
 }
 
@@ -341,6 +350,61 @@ func (nh *NotificationHandler) SendEmail(c *gin.Context) {
 		errResponse := NewErrorResponse(fmt.Errorf("%w: %w", errSendingEmail, err))
 		c.JSON(errResponse.StatusCode, errResponse)
 		return
+	}
+
+	c.JSON(http.StatusOK, nil)
+}
+
+// TriggerNotifications godoc
+//
+//	@Summary		sends notifications
+//	@Description	Sends notifications to all users that have scheduled one for the hour of this request
+//	@Tags			Notification
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string	true	"jwt data"
+//	@Success		200				{object}	nil
+//	@Success		204				{object}	nil
+//	@Failure		400,404			{object}	ErrorResponse
+//	@Router			/notifications/trigger [post]
+func (nh *NotificationHandler) TriggerNotifications(c *gin.Context) {
+	currentHour := time.Now().Hour()
+	notifications, err := nh.service.GetAll(fmt.Sprint(currentHour))
+	if err != nil {
+		a := fmt.Errorf("error searching all notifications for given hour %d: %v", currentHour, err)
+		errResponse := NewErrorResponse(a)
+		c.JSON(errResponse.StatusCode, errResponse)
+		return
+	}
+
+	if len(notifications) == 0 {
+		c.JSON(http.StatusNoContent, nil)
+		return
+	}
+
+	for idx := range notifications {
+		notification := notifications[idx]
+		if notification.Via == domain.Mail || notification.Via == domain.Both {
+			mail := email.Mail{
+				To:      notification.Email,
+				Subject: "Scheduled notification",
+				Body:    notification.Message,
+			}
+			err = nh.emailClient.SendEmail(mail)
+			if err != nil {
+				logrus.Errorf("error sending mail: %v", err)
+			}
+			continue
+		}
+
+		if notification.Via == domain.Telegram || notification.Via == domain.Both {
+			// ToDo: refactor. Licha
+			err = nh.telegramer.SendNotifications([]domain.Notification{notification})
+			if err != nil {
+				logrus.Errorf("error sending telegram: %v", err)
+			}
+			continue
+		}
 	}
 
 	c.JSON(http.StatusOK, nil)
